@@ -103,9 +103,15 @@ func main() {
 		log.Fatal("Failed to load settings:", err)
 	}
 
+	colors, err := config.LoadColors()
+	if err != nil {
+		log.Fatal("Failed to load colors:", err)
+	}
+
 	app := &models.App{
 		StartTime: time.Now(),
 		Settings:  settings,
+		Colors:    colors,
 	}
 
 	if *learnCommand != "" {

@@ -3,6 +3,9 @@ in float vLife;
 in float vHue;
 out vec4 FragColor;
 
+uniform vec3 particleColor;
+uniform float useParticleColor;
+
 vec3 hsv2rgb(vec3 c) {
 	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
 	vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
@@ -15,7 +18,9 @@ void main() {
 	if (dist > 0.5) discard;
 
 	float alpha = smoothstep(0.5, 0.2, dist) * vLife;
-	vec3 color = hsv2rgb(vec3(vHue, 0.9, 1.0)) * (1.0 + (1.0 - dist * 2.0) * 2.0);
+	vec3 rainbow = hsv2rgb(vec3(vHue, 0.9, 1.0));
+	vec3 baseColor = mix(rainbow, particleColor, useParticleColor);
+	vec3 color = baseColor * (1.0 + (1.0 - dist * 2.0) * 2.0);
 
 	FragColor = vec4(color, alpha * 0.8);
 }

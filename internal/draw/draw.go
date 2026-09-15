@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/m31-galaxy/Hexecute/internal/config"
 	"github.com/m31-galaxy/Hexecute/internal/models"
 	"github.com/m31-galaxy/Hexecute/pkg/wayland"
 )
@@ -15,6 +16,27 @@ type App struct {
 
 func New(app *models.App) *App {
 	return &App{app: app}
+}
+
+// colors returns the configured colors, or an empty config when none are loaded.
+func (a *App) colors() *config.ColorConfig {
+	if a.app.Colors != nil {
+		return a.app.Colors
+	}
+	return &config.ColorConfig{}
+}
+
+// setOptionalColorUniform uploads a color and a 0/1 flag. When c is nil the
+// flag is set to 0 and the shader keeps its default animated behavior.
+func setOptionalColorUniform(program uint32, colorName, flagName string, c *config.Color) {
+	colorLoc := gl.GetUniformLocation(program, gl.Str(colorName+"\x00"))
+	flagLoc := gl.GetUniformLocation(program, gl.Str(flagName+"\x00"))
+	if c != nil {
+		gl.Uniform3f(colorLoc, c.R, c.G, c.B)
+		gl.Uniform1f(flagLoc, 1.0)
+	} else {
+		gl.Uniform1f(flagLoc, 0.0)
+	}
 }
 
 func (a *App) Draw(window *wayland.WaylandWindow) {
@@ -123,6 +145,8 @@ func (a *App) drawLine(
 	timeLoc := gl.GetUniformLocation(a.app.Program, gl.Str("time\x00"))
 	gl.Uniform1f(timeLoc, currentTime)
 
+	setOptionalColorUniform(a.app.Program, "strokeColor", "useStrokeColor", a.colors().Stroke)
+
 	gl.BindVertexArray(a.app.Vao)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, int32(len(a.app.Points)*2))
 	gl.BindVertexArray(0)
@@ -146,6 +170,8 @@ func (a *App) drawParticles(window *wayland.WaylandWindow) {
 	gl.UseProgram(a.app.ParticleProgram)
 	resolutionLoc := gl.GetUniformLocation(a.app.ParticleProgram, gl.Str("resolution\x00"))
 	gl.Uniform2f(resolutionLoc, float32(width), float32(height))
+
+	setOptionalColorUniform(a.app.ParticleProgram, "particleColor", "useParticleColor", a.colors().Particles)
 
 	gl.BindVertexArray(a.app.ParticleVAO)
 	gl.DrawArrays(gl.POINTS, 0, int32(len(a.app.Particles)))
@@ -186,6 +212,13 @@ func (a *App) drawBackground(currentTime float32, window *wayland.WaylandWindow)
 
 	alphaLoc := gl.GetUniformLocation(a.app.BgProgram, gl.Str("alpha\x00"))
 	gl.Uniform1f(alphaLoc, alpha)
+
+	bgColorLoc := gl.GetUniformLocation(a.app.BgProgram, gl.Str("bgColor\x00"))
+	if bg := a.colors().Background; bg != nil {
+		gl.Uniform3f(bgColorLoc, bg.R, bg.G, bg.B)
+	} else {
+		gl.Uniform3f(bgColorLoc, 0, 0, 0)
+	}
 
 	cursorPosLoc := gl.GetUniformLocation(a.app.BgProgram, gl.Str("cursorPos\x00"))
 	gl.Uniform2f(cursorPosLoc, float32(x), float32(float64(height)-y))
@@ -258,6 +291,14 @@ func (a *App) drawCursorGlow(window *wayland.WaylandWindow, cursorX, cursorY, cu
 
 	exitProgressLoc := gl.GetUniformLocation(a.app.CursorGlowProgram, gl.Str("exitProgress\x00"))
 	gl.Uniform1f(exitProgressLoc, exitProgress)
+
+	setOptionalColorUniform(a.app.CursorGlowProgram, "glowMainColor", "useGlowColors", a.colors().CursorGlow)
+	accentLoc := gl.GetUniformLocation(a.app.CursorGlowProgram, gl.Str("glowAccentColor\x00"))
+	if accent := a.colors().CursorGlowAccent; accent != nil {
+		gl.Uniform3f(accentLoc, accent.R, accent.G, accent.B)
+	} else {
+		gl.Uniform3f(accentLoc, 0, 0, 0)
+	}
 
 	gl.BindVertexArray(a.app.CursorGlowVAO)
 	gl.DrawArrays(gl.TRIANGLE_STRIP, 0, 4)

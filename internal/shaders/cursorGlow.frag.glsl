@@ -6,6 +6,9 @@ uniform float time;
 uniform float velocity;
 uniform float isDrawing;
 uniform float exitProgress;
+uniform vec3 glowMainColor;
+uniform vec3 glowAccentColor;
+uniform float useGlowColors;
 
 vec3 hsv2rgb(vec3 c) {
 	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
@@ -109,8 +112,10 @@ void main() {
 
 	float hueSpeed = mix(0.2, 0.6, velocityNorm);
 	float hue = mod(time * hueSpeed + atan(coord.y, coord.x) / 6.28 + swirl * 0.3, 1.0);
-	vec3 mainColor = hsv2rgb(vec3(hue, mix(0.7, 0.75, velocityNorm), 1.0));
-	vec3 accentColor = hsv2rgb(vec3(mod(hue + 0.5, 1.0), 0.75, 1.2));
+	vec3 rainbowMain = hsv2rgb(vec3(hue, mix(0.7, 0.75, velocityNorm), 1.0));
+	vec3 rainbowAccent = hsv2rgb(vec3(mod(hue + 0.5, 1.0), 0.75, 1.2));
+	vec3 mainColor = mix(rainbowMain, glowMainColor, useGlowColors);
+	vec3 accentColor = mix(rainbowAccent, glowAccentColor, useGlowColors);
 	vec3 finalColor = mainColor * intensity;
 	finalColor += accentColor * innerGlow;
 	finalColor += mainColor * 0.5 * outerGlow;

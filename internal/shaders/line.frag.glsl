@@ -4,6 +4,8 @@ in vec2 vPosition;
 out vec4 FragColor;
 
 uniform float time;
+uniform vec3 strokeColor;
+uniform float useStrokeColor;
 
 vec3 hsv2rgb(vec3 c) {
 	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
@@ -13,7 +15,8 @@ vec3 hsv2rgb(vec3 c) {
 
 void main() {
 	float hue = mod(vPosition.x * 0.001 + vPosition.y * 0.001 + time * 0.5, 1.0);
-	vec3 color = hsv2rgb(vec3(hue, 0.8, 1.0));
+	vec3 rainbow = hsv2rgb(vec3(hue, 0.8, 1.0));
+	vec3 color = mix(rainbow, strokeColor, useStrokeColor);
 
 	float sparkle = sin(vPosition.x * 0.1 + time * 3.0) * sin(vPosition.y * 0.1 + time * 2.0);
 	sparkle = smoothstep(0.7, 1.0, sparkle) * 0.5;

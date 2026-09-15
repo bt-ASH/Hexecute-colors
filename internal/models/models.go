@@ -56,4 +56,5 @@ type App struct {
 	LearnCount        int
 	SavedGestures     []GestureConfig
 	Settings          *config.Settings
+	Colors            *config.ColorConfig
 }
