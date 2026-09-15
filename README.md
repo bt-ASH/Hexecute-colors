@@ -99,3 +99,33 @@ To view all your configured gestures, run `hexecute --list` in a terminal.
 To delete a previously assigned gesture, use the `hexecute --remove [gesture]` command.
 
 All gestures are saved in the `~/.config/hexecute/gestures.json` file. This file can be manually shared, edited, backed up, or swapped.
+
+### Customizing Colors
+
+Hexecute is a rainbow of animated colors by default. If you'd rather pick your own palette, edit the `~/.config/hexecute/colors.json` file - it's created for you the first time you run Hexecute.
+
+Every key is optional, and any key you leave as `null` keeps its default rainbow animation:
+
+```json
+{
+  "stroke": "#ff79c6",
+  "particles": null,
+  "background": "#1e1e2e",
+  "cursor_glow": "#bd93f9",
+  "cursor_glow_accent": "#ff79c6"
+}
+```
+
+Here's what each key paints:
+
+- `stroke` - the line you draw
+- `particles` - the sparks trailing behind your cursor
+- `background` - the overlay behind everything, black by default
+- `cursor_glow` - the glow around your cursor
+- `cursor_glow_accent` - the secondary swirl inside that glow
+
+Colors are written as hex strings - `#rrggbb`, `#rgb`, or just `rrggbb` without the `#`. An 8 digit `#rrggbbaa` value also works, but the alpha channel is ignored, since the transparency is driven by the animation itself.
+
+If you set `cursor_glow`, set `cursor_glow_accent` along with it, otherwise the swirl will fall back to black.
+
+Colors are loaded at startup and the file is read once, so restart Hexecute to see your changes. Unrecognised keys and malformed colors are reported in the logs and skipped.
